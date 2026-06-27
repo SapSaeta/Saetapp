@@ -1,0 +1,88 @@
+name: Build Saetapp APK
+
+on:
+  push:
+    branches:
+      - main
+      - saetapp-capacitor-build
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    name: Build Android Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Prepare web assets
+        run: |
+          rm -rf www
+          mkdir -p www
+          cp index.html www/index.html
+
+      - name: Generate Android project
+        run: |
+          rm -rf android
+          npx cap add android
+          npx cap sync android
+
+      - name: Configure Android icon and permissions
+        run: |
+          mkdir -p android/app/src/main/res/drawable
+          cat > android/app/src/main/res/drawable/saetapp_icon.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+            <path android:fillColor="#F5EFE6" android:pathData="M0,0h108v108h-108z"/>
+            <path android:fillColor="#C2522E" android:pathData="M18,42 L83,24 L58,52 Z"/>
+            <path android:fillColor="#0A6ED1" android:pathData="M28,75 L90,30 L63,66 Z"/>
+            <path android:fillColor="#00000000" android:strokeColor="#C2522E" android:strokeWidth="4" android:pathData="M20,54a34,34 0,1 0,68 0a34,34 0,1 0,-68 0"/>
+          </vector>
+          EOF
+          python3 - <<'PY'
+          from pathlib import Path
+          manifest = Path('android/app/src/main/AndroidManifest.xml')
+          text = manifest.read_text()
+          if 'android.permission.INTERNET' not in text:
+              text = text.replace('<manifest', '<manifest', 1)
+              text = text.replace('<application', '    <uses-permission android:name="android.permission.INTERNET" />\n\n    <application', 1)
+          text = text.replace('android:icon="@mipmap/ic_launcher"', 'android:icon="@drawable/saetapp_icon"')
+          text = text.replace('android:roundIcon="@mipmap/ic_launcher_round"', 'android:roundIcon="@drawable/saetapp_icon"')
+          text = text.replace('android:label="@string/app_name"', 'android:label="Saetapp"')
+          manifest.write_text(text)
+          PY
+
+      - name: Build debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Rename APK
+        run: |
+          mkdir -p output
+          cp android/app/build/outputs/apk/debug/app-debug.apk output/Saetapp-debug.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Saetapp-debug-apk
+          path: output/Saetapp-debug.apk
+          if-no-files-found: error
