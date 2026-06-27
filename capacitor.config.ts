@@ -1,11 +1,12 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.saetaia.personal',
-  appName: 'SaetaIA Personal',
+  appId: 'com.saeta.saetapp',
+  appName: 'Saetapp',
   webDir: 'www',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
+    cleartext: true
   },
   android: {
     allowMixedContent: true
