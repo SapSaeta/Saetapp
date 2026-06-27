@@ -1,0 +1,16 @@
+{
+  "name": "saetapp",
+  "version": "1.0.0",
+  "description": "Saetapp Android app built with Capacitor",
+  "private": true,
+  "scripts": {
+    "sync": "cap sync android",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/cli": "latest",
+    "@capacitor/core": "latest"
+  },
+  "devDependencies": {}
+}
