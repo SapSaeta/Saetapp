@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -30,6 +30,8 @@ jobs:
         run: |
           npm install --include=dev
           npm install --save-dev typescript
+          node --version
+          npm --version
           npx tsc --version
 
       - name: Prepare web assets
