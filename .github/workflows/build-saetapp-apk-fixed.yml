@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Install npm dependencies
         run: |
@@ -32,6 +32,7 @@ jobs:
           npm install --save-dev typescript
           node --version
           npm --version
+          java -version
           npx tsc --version
 
       - name: Prepare web assets
